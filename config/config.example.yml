@@ -1,6 +1,6 @@
 ---
 # Path to your youtube-dl binary
-youtubedl: vendor/rg3/youtube-dl/youtube_dl/__main__.py
+youtubedl: /usr/local/bin/youtube-dl
 
 # Path to your python binary
 python: /usr/bin/python
@@ -48,6 +48,7 @@ appName: AllTube Download
 
 # Generic formats supported by youtube-dl
 genericFormats:
+    bestaudio[ext=m4a]: Best audio [m4a]
     best: Best
     bestvideo+bestaudio: Remux best video with best audio
     worst: Worst
