@@ -1,4 +1,5 @@
 <?php
+
 /**
  * DownloadController class.
  */
@@ -49,7 +50,8 @@ class DownloadController extends BaseController
                 return $this->getDownloadResponse($request, $response);
             } catch (PasswordException $e) {
                 return $response->withRedirect(
-                    $this->container->get('router')->pathFor('info').'?'.http_build_query($request->getQueryParams())
+                    $this->container->get('router')->pathFor('info') .
+                        '?' . http_build_query($request->getQueryParams())
                 );
             } catch (Exception $e) {
                 $response->getBody()->write($e->getMessage());
@@ -76,8 +78,8 @@ class DownloadController extends BaseController
 
         $response = $response->withHeader(
             'Content-Disposition',
-            'attachment; filename="'.
-            $this->video->getFileNameWithExtension('mp3').'"'
+            'attachment; filename="' .
+            $this->video->getFileNameWithExtension('mp3') . '"'
         );
         $response = $response->withHeader('Content-Type', 'audio/mpeg');
 
@@ -153,22 +155,22 @@ class DownloadController extends BaseController
             $response = $response->withHeader('Content-Type', 'application/zip');
             $response = $response->withHeader(
                 'Content-Disposition',
-                'attachment; filename="'.$this->video->title.'.zip"'
+                'attachment; filename="' . $this->video->title . '.zip"'
             );
 
             return $response->withBody($stream);
         } elseif ($this->video->protocol == 'rtmp') {
-            $response = $response->withHeader('Content-Type', 'video/'.$this->video->ext);
+            $response = $response->withHeader('Content-Type', 'video/' . $this->video->ext);
             $body = new Stream($this->video->getRtmpStream());
         } elseif ($this->video->protocol == 'm3u8' || $this->video->protocol == 'm3u8_native') {
-            $response = $response->withHeader('Content-Type', 'video/'.$this->video->ext);
+            $response = $response->withHeader('Content-Type', 'video/' . $this->video->ext);
             $body = new Stream($this->video->getM3uStream());
         } else {
+            $headers = [];
             $range = $request->getHeader('Range');
-            if (empty($range)) {
-                $headers = [];
-            } else {
-                $headers = ['Range' => $range];
+
+            if (!empty($range)) {
+                $headers['Range'] = $range;
             }
             $stream = $this->video->getHttpResponse($headers);
 
@@ -192,8 +194,8 @@ class DownloadController extends BaseController
         }
         $response = $response->withHeader(
             'Content-Disposition',
-            'attachment; filename="'.
-                $this->video->getFilename().'"'
+            'attachment; filename="' .
+                $this->video->getFilename() . '"'
         );
 
         return $response;
@@ -210,7 +212,7 @@ class DownloadController extends BaseController
     private function getRemuxStream(Request $request, Response $response)
     {
         if (!$this->config->remux) {
-            throw new Exception(_('You need to enable remux mode to merge two formats.'));
+            throw new Exception($this->localeManager->t('You need to enable remux mode to merge two formats.'));
         }
         $stream = $this->video->getRemuxStream();
         $response = $response->withHeader('Content-Type', 'video/x-matroska');
@@ -220,7 +222,7 @@ class DownloadController extends BaseController
 
         return $response->withHeader(
             'Content-Disposition',
-            'attachment; filename="'.$this->video->getFileNameWithExtension('mkv')
+            'attachment; filename="' . $this->video->getFileNameWithExtension('mkv') . '"'
         );
     }
 
@@ -250,7 +252,7 @@ class DownloadController extends BaseController
             return $this->getStream($request, $response);
         } else {
             if (empty($videoUrls[0])) {
-                throw new Exception(_("Can't find URL of video."));
+                throw new Exception($this->localeManager->t("Can't find URL of video."));
             }
 
             return $response->withRedirect($videoUrls[0]);
@@ -269,10 +271,10 @@ class DownloadController extends BaseController
     {
         $response = $response->withHeader(
             'Content-Disposition',
-            'attachment; filename="'.
-            $this->video->getFileNameWithExtension($request->getQueryParam('customFormat')).'"'
+            'attachment; filename="' .
+            $this->video->getFileNameWithExtension($request->getQueryParam('customFormat')) . '"'
         );
-        $response = $response->withHeader('Content-Type', 'video/'.$request->getQueryParam('customFormat'));
+        $response = $response->withHeader('Content-Type', 'video/' . $request->getQueryParam('customFormat'));
 
         if ($request->isGet() || $request->isPost()) {
             $process = $this->video->getConvertedStream(

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * JsonControllerTest class.
  */
@@ -15,7 +16,7 @@ class JsonControllerTest extends ControllerTest
     /**
      * Prepare tests.
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -26,6 +27,7 @@ class JsonControllerTest extends ControllerTest
      * Test the json() function.
      *
      * @return void
+     * @requires download
      */
     public function testJson()
     {
@@ -36,6 +38,7 @@ class JsonControllerTest extends ControllerTest
      * Test the json() function with an error.
      *
      * @return void
+     * @requires download
      */
     public function testJsonWithError()
     {

@@ -1,10 +1,12 @@
 <?php
+
 /**
  * ViewFactoryTest class.
  */
 
 namespace Alltube\Test;
 
+use Alltube\LocaleManager;
 use Alltube\ViewFactory;
 use Slim\Container;
 use Slim\Http\Environment;
@@ -23,7 +25,9 @@ class ViewFactoryTest extends BaseTest
      */
     public function testCreate()
     {
-        $view = ViewFactory::create(new Container());
+        $container = new Container();
+        $container['locale'] = LocaleManager::getInstance();
+        $view = ViewFactory::create($container);
         $this->assertInstanceOf(Smarty::class, $view);
     }
 
@@ -34,8 +38,10 @@ class ViewFactoryTest extends BaseTest
      */
     public function testCreateWithXForwardedProto()
     {
+        $container = new Container();
+        $container['locale'] = LocaleManager::getInstance();
         $request = Request::createFromEnvironment(Environment::mock());
-        $view = ViewFactory::create(new Container(), $request->withHeader('X-Forwarded-Proto', 'https'));
+        $view = ViewFactory::create($container, $request->withHeader('X-Forwarded-Proto', 'https'));
         $this->assertInstanceOf(Smarty::class, $view);
     }
 }

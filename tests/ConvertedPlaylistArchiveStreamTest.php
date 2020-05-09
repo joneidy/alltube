@@ -1,4 +1,5 @@
 <?php
+
 /**
  * ConvertedPlaylistArchiveStreamTest class.
  */
@@ -10,13 +11,14 @@ use Alltube\Video;
 
 /**
  * Unit tests for the ConvertedPlaylistArchiveStream class.
+ * @requires download
  */
 class ConvertedPlaylistArchiveStreamTest extends StreamTest
 {
     /**
      * Prepare tests.
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

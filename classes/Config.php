@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Config class.
  */
@@ -7,6 +8,7 @@ namespace Alltube;
 
 use Exception;
 use Symfony\Component\Yaml\Yaml;
+use Jawira\CaseConverter\Convert;
 
 /**
  * Manage config parameters.
@@ -25,7 +27,7 @@ class Config
      *
      * @var string
      */
-    public $youtubedl = 'vendor/rg3/youtube-dl/youtube_dl/__main__.py';
+    public $youtubedl = 'vendor/ytdl-org/youtube-dl/youtube_dl/__main__.py';
 
     /**
      * python binary path.
@@ -134,6 +136,13 @@ class Config
     public $genericFormats = [];
 
     /**
+     * Enable debug mode.
+     *
+     * @var bool
+     */
+    public $debug = false;
+
+    /**
      * Config constructor.
      *
      * @param array $options Options
@@ -142,13 +151,14 @@ class Config
     {
         $this->applyOptions($options);
         $this->getEnv();
+        $localeManager = LocaleManager::getInstance();
 
         if (empty($this->genericFormats)) {
             // We don't put this in the class definition so it can be detected by xgettext.
             $this->genericFormats = [
-                'best'                => _('Best'),
-                'bestvideo+bestaudio' => _('Remux best video with best audio'),
-                'worst'               => _('Worst'),
+                'best'                => $localeManager->t('Best'),
+                'bestvideo+bestaudio' => $localeManager->t('Remux best video with best audio'),
+                'worst'               => $localeManager->t('Worst'),
             ];
         }
 
@@ -160,7 +170,7 @@ class Config
                 }
             } elseif (!$this->stream) {
                 // Force HTTP if stream is not enabled.
-                $this->replaceGenericFormat($format, $format.'[protocol=https]/'.$format.'[protocol=http]');
+                $this->replaceGenericFormat($format, $format . '[protocol=https]/' . $format . '[protocol=http]');
             }
         }
     }
@@ -197,9 +207,9 @@ class Config
         so they will go to the logs.
          */
         if (!is_file($this->youtubedl)) {
-            throw new Exception("Can't find youtube-dl at ".$this->youtubedl);
+            throw new Exception("Can't find youtube-dl at " . $this->youtubedl);
         } elseif (!Video::checkCommand([$this->python, '--version'])) {
-            throw new Exception("Can't find Python at ".$this->python);
+            throw new Exception("Can't find Python at " . $this->python);
         }
     }
 
@@ -221,17 +231,18 @@ class Config
 
     /**
      * Override options from environement variables.
-     * Supported environment variables: CONVERT, PYTHON, AUDIO_BITRATE.
+     * Environment variables should use screaming snake case: CONVERT, PYTHON, AUDIO_BITRATE, etc.
+     * If the value is an array, you should use the YAML format: "CONVERT_ADVANCED_FORMATS='[foo, bar]'"
      *
      * @return void
      */
     private function getEnv()
     {
-        foreach (['CONVERT', 'PYTHON', 'AUDIO_BITRATE', 'STREAM'] as $var) {
-            $env = getenv($var);
+        foreach (get_object_vars($this) as $prop => $value) {
+            $convert = new Convert($prop);
+            $env = getenv($convert->toMacro());
             if ($env) {
-                $prop = lcfirst(str_replace('_', '', ucwords(strtolower($var), '_')));
-                $this->$prop = $env;
+                $this->$prop = Yaml::parse($env);
             }
         }
     }
@@ -262,7 +273,7 @@ class Config
             self::$instance = new self($options);
             self::$instance->validateOptions();
         } else {
-            throw new Exception("Can't find config file at ".$file);
+            throw new Exception("Can't find config file at " . $file);
         }
     }
 

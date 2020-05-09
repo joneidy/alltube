@@ -1,4 +1,5 @@
 <?php
+
 /**
  * FrontController class.
  */
@@ -7,14 +8,16 @@ namespace Alltube\Controller;
 
 use Alltube\Exception\PasswordException;
 use Alltube\Locale;
-use Alltube\LocaleManager;
 use Alltube\Video;
+use Throwable;
 use Exception;
 use Psr\Container\ContainerInterface;
 use Slim\Container;
 use Slim\Http\Request;
 use Slim\Http\Response;
 use Slim\Views\Smarty;
+use Symfony\Component\Debug\ExceptionHandler;
+use Symfony\Component\Debug\Exception\FlattenException;
 
 /**
  * Main controller.
@@ -29,13 +32,6 @@ class FrontController extends BaseController
     private $view;
 
     /**
-     * LocaleManager instance.
-     *
-     * @var LocaleManager
-     */
-    private $localeManager;
-
-    /**
      * BaseController constructor.
      *
      * @param ContainerInterface $container Slim dependency container
@@ -44,7 +40,6 @@ class FrontController extends BaseController
     {
         parent::__construct($container);
 
-        $this->localeManager = $this->container->get('locale');
         $this->view = $this->container->get('view');
     }
 
@@ -65,8 +60,10 @@ class FrontController extends BaseController
             [
                 'config'           => $this->config,
                 'class'            => 'index',
-                'description'      => _('Easily download videos from Youtube, Dailymotion, Vimeo and other websites.'),
-                'domain'           => $uri->getScheme().'://'.$uri->getAuthority(),
+                'description'      => $this->localeManager->t(
+                    'Easily download videos from Youtube, Dailymotion, Vimeo and other websites.'
+                ),
+                'domain'           => $uri->getScheme() . '://' . $uri->getAuthority(),
                 'canonical'        => $this->getCanonicalUrl($request),
                 'supportedLocales' => $this->localeManager->getSupportedLocales(),
                 'locale'           => $this->localeManager->getLocale(),
@@ -109,8 +106,8 @@ class FrontController extends BaseController
                 'config'      => $this->config,
                 'extractors'  => Video::getExtractors(),
                 'class'       => 'extractors',
-                'title'       => _('Supported websites'),
-                'description' => _('List of all supported websites from which Alltube Download '.
+                'title'       => $this->localeManager->t('Supported websites'),
+                'description' => $this->localeManager->t('List of all supported websites from which Alltube Download ' .
                     'can extract video or audio files'),
                 'canonical' => $this->getCanonicalUrl($request),
                 'locale'    => $this->localeManager->getLocale(),
@@ -136,8 +133,10 @@ class FrontController extends BaseController
             [
                 'config'      => $this->config,
                 'class'       => 'password',
-                'title'       => _('Password prompt'),
-                'description' => _('You need a password in order to download this video with Alltube Download'),
+                'title'       => $this->localeManager->t('Password prompt'),
+                'description' => $this->localeManager->t(
+                    'You need a password in order to download this video with Alltube Download'
+                ),
                 'canonical'   => $this->getCanonicalUrl($request),
                 'locale'      => $this->localeManager->getLocale(),
             ]
@@ -167,11 +166,20 @@ class FrontController extends BaseController
         } else {
             $template = 'info.tpl';
         }
-        $title = _('Video download');
-        $description = _('Download video from ').$this->video->extractor_key;
+        $title = $this->localeManager->t('Video download');
+        $description = $this->localeManager->t(
+            'Download video from @extractor',
+            ['@extractor' => $this->video->extractor_key]
+        );
         if (isset($this->video->title)) {
             $title = $this->video->title;
-            $description = _('Download').' "'.$this->video->title.'" '._('from').' '.$this->video->extractor_key;
+            $description = $this->localeManager->t(
+                'Download @title from @extractor',
+                [
+                    '@title' => $this->video->title,
+                    '@extractor' => $this->video->extractor_key
+                ]
+            );
         }
         $this->view->render(
             $response,
@@ -209,8 +217,8 @@ class FrontController extends BaseController
             if ($this->config->convert && $request->getQueryParam('audio')) {
                 // We skip the info page and get directly to the download.
                 return $response->withRedirect(
-                    $this->container->get('router')->pathFor('download').
-                    '?'.http_build_query($request->getQueryParams())
+                    $this->container->get('router')->pathFor('download') .
+                    '?' . http_build_query($request->getQueryParams())
                 );
             } else {
                 return $this->getInfoResponse($request, $response);
@@ -225,26 +233,40 @@ class FrontController extends BaseController
      *
      * @param Request   $request   PSR-7 request
      * @param Response  $response  PSR-7 response
-     * @param Exception $exception Error to display
+     * @param Throwable $error     Error to display
      *
      * @return Response HTTP response
      */
-    public function error(Request $request, Response $response, Exception $exception)
+    public function error(Request $request, Response $response, Throwable $error)
     {
-        $this->view->render(
-            $response,
-            'error.tpl',
-            [
-                'config'    => $this->config,
-                'errors'    => $exception->getMessage(),
-                'class'     => 'video',
-                'title'     => _('Error'),
-                'canonical' => $this->getCanonicalUrl($request),
-                'locale'    => $this->localeManager->getLocale(),
-            ]
-        );
+        if ($this->config->debug) {
+            $exception = FlattenException::createFromThrowable($error);
+            $handler = new ExceptionHandler();
+            $response->getBody()->write($handler->getHtml($exception));
 
-        return $response->withStatus(500);
+            return $response->withStatus($exception->getStatusCode());
+        } else {
+            if ($error instanceof Exception) {
+                $message = $error->getMessage();
+            } else {
+                $message = '';
+            }
+
+            $this->view->render(
+                $response,
+                'error.tpl',
+                [
+                    'config'    => $this->config,
+                    'error'     => $message,
+                    'class'     => 'video',
+                    'title'     => $this->localeManager->t('Error'),
+                    'canonical' => $this->getCanonicalUrl($request),
+                    'locale'    => $this->localeManager->getLocale(),
+                ]
+            );
+
+            return $response->withStatus(500);
+        }
     }
 
     /**
@@ -266,7 +288,7 @@ class FrontController extends BaseController
 
         $query = $uri->getQuery();
         if (!empty($query)) {
-            $return .= '?'.$query;
+            $return .= '?' . $query;
         }
 
         return $return;

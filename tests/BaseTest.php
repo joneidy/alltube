@@ -1,4 +1,5 @@
 <?php
+
 /**
  * PlaylistArchiveStreamTest class.
  */
@@ -26,22 +27,46 @@ abstract class BaseTest extends TestCase
             $configFile = 'config_test.yml';
         }
 
-        return __DIR__.'/../config/'.$configFile;
+        return __DIR__ . '/../config/' . $configFile;
     }
 
     /**
      * Prepare tests.
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         Config::setFile($this->getConfigFile());
+        $this->checkRequirements();
     }
 
     /**
      * Destroy properties after test.
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
         Config::destroyInstance();
+    }
+
+    /**
+     * Check tests requirements.
+     * @return void
+     */
+    protected function checkRequirements()
+    {
+        $annotations = $this->getAnnotations();
+        $requires = [];
+
+        if (isset($annotations['class']['requires'])) {
+            $requires += $annotations['class']['requires'];
+        }
+        if (isset($annotations['method']['requires'])) {
+            $requires += $annotations['method']['requires'];
+        }
+
+        foreach ($requires as $require) {
+            if ($require == 'download' && getenv('CI')) {
+                $this->markTestSkipped('Do not run tests that download videos on CI.');
+            }
+        }
     }
 }

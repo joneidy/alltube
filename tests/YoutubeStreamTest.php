@@ -1,4 +1,5 @@
 <?php
+
 /**
  * YoutubeStreamTest class.
  */
@@ -10,13 +11,14 @@ use Alltube\Video;
 
 /**
  * Unit tests for the YoutubeStream class.
+ * @requires download
  */
 class YoutubeStreamTest extends StreamTest
 {
     /**
      * Prepare tests.
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

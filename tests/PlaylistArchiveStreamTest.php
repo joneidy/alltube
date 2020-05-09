@@ -1,4 +1,5 @@
 <?php
+
 /**
  * PlaylistArchiveStreamTest class.
  */
@@ -10,13 +11,14 @@ use Alltube\Video;
 
 /**
  * Unit tests for the PlaylistArchiveStream class.
+ * @requires download
  */
 class PlaylistArchiveStreamTest extends StreamTest
 {
     /**
      * Prepare tests.
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

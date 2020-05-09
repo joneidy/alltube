@@ -1,4 +1,5 @@
 <?php
+
 /**
  * StreamTest class.
  */
@@ -22,7 +23,7 @@ abstract class StreamTest extends BaseTest
      *
      * @return void
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $this->stream->close();
     }
@@ -49,7 +50,7 @@ abstract class StreamTest extends BaseTest
      */
     public function testTell()
     {
-        $this->assertInternalType('int', $this->stream->tell());
+        $this->assertIsInt($this->stream->tell());
     }
 
     /**
@@ -81,7 +82,7 @@ abstract class StreamTest extends BaseTest
     public function testRead()
     {
         $result = $this->stream->read(8192);
-        $this->assertInternalType('string', $result);
+        $this->assertIsString($result);
         $this->assertLessThanOrEqual(8192, strlen($result));
     }
 
@@ -122,7 +123,7 @@ abstract class StreamTest extends BaseTest
      */
     public function testIsSeekable()
     {
-        $this->assertInternalType('boolean', $this->stream->isSeekable());
+        $this->assertIsBool($this->stream->isSeekable());
     }
 
     /**
@@ -153,7 +154,7 @@ abstract class StreamTest extends BaseTest
      */
     public function testIsWritable()
     {
-        $this->assertInternalType('boolean', $this->stream->isWritable());
+        $this->assertIsBool($this->stream->isWritable());
     }
 
     /**
@@ -173,7 +174,7 @@ abstract class StreamTest extends BaseTest
      */
     public function testGetContents()
     {
-        $this->assertInternalType('string', $this->stream->getContents());
+        $this->assertIsString($this->stream->getContents());
     }
 
     /**
@@ -183,7 +184,7 @@ abstract class StreamTest extends BaseTest
      */
     public function testGetMetadata()
     {
-        $this->assertInternalType('array', $this->stream->getMetadata());
+        $this->assertIsArray($this->stream->getMetadata());
     }
 
     /**
@@ -193,9 +194,9 @@ abstract class StreamTest extends BaseTest
      */
     public function testGetMetadataWithKey()
     {
-        $this->assertInternalType('string', $this->stream->getMetadata('stream_type'));
-        $this->assertInternalType('string', $this->stream->getMetadata('mode'));
-        $this->assertInternalType('boolean', $this->stream->getMetadata('seekable'));
+        $this->assertIsString($this->stream->getMetadata('stream_type'));
+        $this->assertIsString($this->stream->getMetadata('mode'));
+        $this->assertIsBool($this->stream->getMetadata('seekable'));
         $this->assertNull($this->stream->getMetadata('foo'));
     }
 
@@ -206,7 +207,7 @@ abstract class StreamTest extends BaseTest
      */
     public function testDetach()
     {
-        $this->assertInternalType('resource', $this->stream->detach());
+        $this->assertIsResource($this->stream->detach());
     }
 
     /**
@@ -216,7 +217,7 @@ abstract class StreamTest extends BaseTest
      */
     public function testToString()
     {
-        $this->assertInternalType('string', $this->stream->__toString());
-        $this->assertInternalType('string', (string) $this->stream);
+        $this->assertIsString($this->stream->__toString());
+        $this->assertIsString((string) $this->stream);
     }
 }

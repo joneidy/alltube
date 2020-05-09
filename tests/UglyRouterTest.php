@@ -1,4 +1,5 @@
 <?php
+
 /**
  * UglyRouterTest class.
  */
@@ -24,7 +25,7 @@ class UglyRouterTest extends BaseTest
     /**
      * Prepare tests.
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->router = new UglyRouter();
         $this->router->map(['GET'], '/foo', 'print')->setName('foo');

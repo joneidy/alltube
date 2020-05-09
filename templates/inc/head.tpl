@@ -1,4 +1,3 @@
-{locale path="../i18n" domain="Alltube"}
 <!doctype html>
 <html {if isset($locale)}lang="{$locale->getBcp47()}"{/if}>
 <head>
@@ -9,7 +8,8 @@
         <meta name="twitter:description" content="{$description|escape}" />
         <meta property="og:description" content="{$description|escape}" />
     {/if}
-    <link rel="stylesheet" href="{base_url}/dist/main.css" />
+    <link rel="stylesheet" href="{base_url}/css/fonts.css" />
+    <link rel="stylesheet" href="{base_url}/css/style.css" />
     <title>{$config->appName}{if isset($title)} - {$title|escape}{/if}</title>
     <link rel="canonical" href="{$canonical}" />
     <link rel="icon" href="{base_url}/img/favicon.png" />

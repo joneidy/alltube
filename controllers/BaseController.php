@@ -1,4 +1,5 @@
 <?php
+
 /**
  * BaseController class.
  */
@@ -6,6 +7,7 @@
 namespace Alltube\Controller;
 
 use Alltube\Config;
+use Alltube\LocaleManager;
 use Alltube\SessionManager;
 use Alltube\Video;
 use Aura\Session\Segment;
@@ -53,6 +55,13 @@ abstract class BaseController
     protected $sessionSegment;
 
     /**
+     * LocaleManager instance.
+     *
+     * @var LocaleManager
+     */
+    protected $localeManager;
+
+    /**
      * BaseController constructor.
      *
      * @param ContainerInterface $container Slim dependency container
@@ -63,6 +72,7 @@ abstract class BaseController
         $this->container = $container;
         $session = SessionManager::getSession();
         $this->sessionSegment = $session->getSegment(self::class);
+        $this->localeManager = $this->container->get('locale');
 
         if ($this->config->stream) {
             $this->defaultFormat = 'best';

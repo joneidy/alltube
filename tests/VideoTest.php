@@ -1,4 +1,5 @@
 <?php
+
 /**
  * VideoTest class.
  */
@@ -7,9 +8,11 @@ namespace Alltube\Test;
 
 use Alltube\Config;
 use Alltube\Video;
+use Exception;
 
 /**
  * Unit tests for the Video class.
+ * @requires download
  */
 class VideoTest extends BaseTest
 {
@@ -46,7 +49,7 @@ class VideoTest extends BaseTest
     ) {
         $video = new Video($url, $format);
         foreach ($video->getUrl() as $videoURL) {
-            $this->assertContains($domain, $videoURL);
+            $this->assertStringContainsString($domain, $videoURL);
         }
     }
 
@@ -57,13 +60,9 @@ class VideoTest extends BaseTest
      */
     public function testgetUrlWithPassword()
     {
-        if (getenv('CI')) {
-            $this->markTestSkipped('Travis is blacklisted by Vimeo.');
-        }
-
         $video = new Video('http://vimeo.com/68375962', 'best', 'youtube-dl');
         foreach ($video->getUrl() as $videoURL) {
-            $this->assertContains('vimeocdn.com', $videoURL);
+            $this->assertStringContainsString('vimeocdn.com', $videoURL);
         }
     }
 
@@ -71,14 +70,10 @@ class VideoTest extends BaseTest
      * Test getUrl function with a protected video and no password.
      *
      * @return void
-     * @expectedException Alltube\Exception\PasswordException
      */
     public function testgetUrlWithMissingPassword()
     {
-        if (getenv('CI')) {
-            $this->markTestSkipped('Travis is blacklisted by Vimeo.');
-        }
-
+        $this->expectException(Exception::class);
         $video = new Video('http://vimeo.com/68375962');
         $video->getUrl();
     }
@@ -87,14 +82,10 @@ class VideoTest extends BaseTest
      * Test getUrl function with a protected video and a wrong password.
      *
      * @return void
-     * @expectedException Exception
      */
     public function testgetUrlWithWrongPassword()
     {
-        if (getenv('CI')) {
-            $this->markTestSkipped('Travis is blacklisted by Vimeo.');
-        }
-
+        $this->expectException(Exception::class);
         $video = new Video('http://vimeo.com/68375962', 'best', 'foo');
         $video->getUrl();
     }
@@ -105,11 +96,11 @@ class VideoTest extends BaseTest
      * @param string $url URL
      *
      * @return void
-     * @expectedException Exception
      * @dataProvider      ErrorUrlProvider
      */
     public function testgetUrlError($url)
     {
+        $this->expectException(Exception::class);
         $video = new Video($url);
         $video->getUrl();
     }
@@ -130,7 +121,7 @@ class VideoTest extends BaseTest
             ],
             [
                 'https://www.youtube.com/watch?v=RJJ6FCAXvKg', 18,
-                'Heart_Attack_-_Demi_Lovato_'.
+                'Heart_Attack_-_Demi_Lovato_' .
                 'Sam_Tsui_Against_The_Current-RJJ6FCAXvKg',
                 'mp4',
                 'googlevideo.com',
@@ -142,28 +133,12 @@ class VideoTest extends BaseTest
                 'bbcodspdns.fcod.llnwd.net',
             ],
             [
-                'http://www.rtl2.de/sendung/grip-das-motormagazin/folge/folge-203-0', 'bestaudio/best',
-                'GRIP_sucht_den_Sommerkonig-folge-203-0',
-                'f4v',
-                'edgefcs.net',
-            ],
-            [
-                'https://openload.co/f/kUEfGclsU9o', 'best[protocol^=http]',
-                'skyrim_no-audio_1080.mp4-kUEfGclsU9o',
-                'mp4',
-                'openload.co',
-            ],
-        ];
-
-        if (!getenv('CI')) {
-            // Travis is blacklisted by Vimeo.
-            $videos[] = [
-                'https://vimeo.com/24195442', 'best[protocol^=http]',
+                'https://vimeo.com/24195442', 'http-720p',
                 'Carving_the_Mountains-24195442',
                 'mp4',
-                'vimeocdn.com',
-            ];
-        }
+                'gcs-vimeo.akamaized.net',
+            ]
+        ];
 
         return $videos;
     }
@@ -192,17 +167,14 @@ class VideoTest extends BaseTest
      */
     public function m3uUrlProvider()
     {
-        $videos = [];
-
-        if (!getenv('CI')) {
-            // Twitter returns a 429 error when the test is ran too many times.
-            $videos[] = [
+        $videos = [
+            [
                 'https://twitter.com/verge/status/813055465324056576/video/1', 'hls-2176',
                 'The_Verge_-_This_tiny_origami_robot_can_self-fold_and_complete_tasks-813055465324056576',
                 'mp4',
                 'video.twimg.com',
-            ];
-        }
+            ]
+        ];
 
         return $videos;
     }
@@ -264,11 +236,11 @@ class VideoTest extends BaseTest
      * @param string $url URL
      *
      * @return void
-     * @expectedException Exception
      * @dataProvider      ErrorURLProvider
      */
     public function testGetJsonError($url)
     {
+        $this->expectException(Exception::class);
         $video = new Video($url);
         $video->getJson();
     }
@@ -289,7 +261,7 @@ class VideoTest extends BaseTest
     public function testGetFilename($url, $format, $filename, $extension)
     {
         $video = new Video($url, $format);
-        $this->assertEquals($video->getFilename(), $filename.'.'.$extension);
+        $this->assertEquals($video->getFilename(), $filename . '.' . $extension);
     }
 
     /**
@@ -298,11 +270,11 @@ class VideoTest extends BaseTest
      * @param string $url URL
      *
      * @return void
-     * @expectedException Exception
      * @dataProvider      ErrorUrlProvider
      */
     public function testGetFilenameError($url)
     {
+        $this->expectException(Exception::class);
         $video = new Video($url);
         $video->getFilename();
     }
@@ -329,11 +301,11 @@ class VideoTest extends BaseTest
      * @param string $format Format
      *
      * @return void
-     * @expectedException Exception
      * @dataProvider      urlProvider
      */
     public function testGetAudioStreamAvconvError($url, $format)
     {
+        $this->expectException(Exception::class);
         Config::setOptions(['avconv' => 'foobar']);
 
         $video = new Video($url, $format);
@@ -347,11 +319,11 @@ class VideoTest extends BaseTest
      * @param string $format Format
      *
      * @return void
-     * @expectedException Exception
      * @dataProvider m3uUrlProvider
      */
     public function testGetAudioStreamM3uError($url, $format)
     {
+        $this->expectException(Exception::class);
         $video = new Video($url, $format);
         $video->getAudioStream();
     }
@@ -360,14 +332,10 @@ class VideoTest extends BaseTest
      * Test getAudioStream function with a DASH URL.
      *
      * @return void
-     * @expectedException Exception
      */
     public function testGetAudioStreamDashError()
     {
-        if (getenv('CI')) {
-            $this->markTestSkipped('Travis is blacklisted by Vimeo.');
-        }
-
+        $this->expectException(Exception::class);
         $video = new Video('https://vimeo.com/251997032', 'bestaudio/best');
         $video->getAudioStream();
     }
@@ -376,10 +344,10 @@ class VideoTest extends BaseTest
      * Test getAudioStream function with a playlist.
      *
      * @return void
-     * @expectedException Exception
      */
     public function testGetAudioStreamPlaylistError()
     {
+        $this->expectException(Exception::class);
         $video = new Video(
             'https://www.youtube.com/playlist?list=PLgdySZU6KUXL_8Jq5aUkyNV7wCa-4wZsC',
             'best'
@@ -396,7 +364,7 @@ class VideoTest extends BaseTest
      */
     private function assertStream($stream)
     {
-        $this->assertInternalType('resource', $stream);
+        $this->assertIsResource($stream);
         $this->assertFalse(feof($stream));
     }
 
@@ -438,10 +406,10 @@ class VideoTest extends BaseTest
      *
      * @return void
      * @dataProvider urlProvider
-     * @expectedException Exception
      */
     public function testGetRemuxStreamWithWrongVideo($url, $format)
     {
+        $this->expectException(Exception::class);
         $video = new Video($url, $format);
         $video->getRemuxStream();
     }
@@ -471,11 +439,11 @@ class VideoTest extends BaseTest
      * @param string $format Format
      *
      * @return void
-     * @expectedException Exception
      * @dataProvider m3uUrlProvider
      */
     public function testGetM3uStreamAvconvError($url, $format)
     {
+        $this->expectException(Exception::class);
         Config::setOptions(['avconv' => 'foobar']);
 
         $video = new Video($url, $format);
@@ -504,11 +472,11 @@ class VideoTest extends BaseTest
      * @param string $format Format
      *
      * @return void
-     * @expectedException Exception
      * @dataProvider m3uUrlProvider
      */
     public function testGetConvertedStreamM3uError($url, $format)
     {
+        $this->expectException(Exception::class);
         $video = new Video($url, $format);
         $video->getConvertedStream(32, 'flv');
     }

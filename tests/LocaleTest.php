@@ -1,4 +1,5 @@
 <?php
+
 /**
  * LocaleTest class.
  */
@@ -22,7 +23,7 @@ class LocaleTest extends BaseTest
     /**
      * Prepare tests.
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->localeObject = new Locale('fr_FR');
     }

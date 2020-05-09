@@ -20,7 +20,7 @@
         {if $config->convert}
             <div class="mp3 small-font">
                 <div class="mp3-inner">
-                    <input type="checkbox" id="audio" class="audio" name="audio">
+                    <input type="checkbox" id="audio" class="audio" name="audio" checked="checked">
                     <label for="audio"><span class="ui"></span>
                         {t}Audio only (MP3){/t}
                     </label>
@@ -40,4 +40,3 @@
     </div>
 
 </main>
-{include file='inc/footer.tpl'}
